@@ -19,6 +19,28 @@ export async function getUserProfile(userId) {
     .select('*')
     .eq('id', userId)
     .single()
+
+  if (error && error.code === 'PGRST116') {
+    // No profile row exists — create one from the current auth user
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return null
+
+    const { data: newProfile, error: insertErr } = await supabase
+      .from('profiles')
+      .upsert({
+        id: user.id,
+        email: user.email,
+        full_name: user.user_metadata?.full_name || user.user_metadata?.name || '',
+        avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || '',
+        tier: 'free',
+      })
+      .select()
+      .single()
+
+    if (insertErr) throw insertErr
+    return newProfile
+  }
+
   if (error) throw error
   return data
 }
