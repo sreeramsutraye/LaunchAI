@@ -69,10 +69,10 @@ export function AuthProvider({ children }) {
   }
 
   const tier = profile?.tier || 'free'
-  const canGenerate = tier !== 'free' || planCount < 1
+  const canGenerate = tier !== 'free' || planCount < 5
 
   const tierLimits = {
-    free: { maxPlans: 1, label: 'Free', pdfWatermark: true },
+    free: { maxPlans: 5, label: 'Free', pdfWatermark: true },
     pro: { maxPlans: Infinity, label: 'Pro', pdfWatermark: false },
     agency: { maxPlans: Infinity, label: 'Agency', pdfWatermark: false },
   }

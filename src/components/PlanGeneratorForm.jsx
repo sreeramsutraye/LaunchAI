@@ -101,7 +101,7 @@ export default function PlanGeneratorForm({ onGenerate, isLoading }) {
           {user && canGenerate && tier === 'free' && (
             <div className="mb-5 flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5">
               <span className="text-xs text-gray-500 dark:text-gray-400">Free plan usage</span>
-              <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{planCount}/1 plans used</span>
+              <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{planCount}/{tierLimits.maxPlans} plans used</span>
             </div>
           )}
 
