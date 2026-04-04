@@ -38,6 +38,16 @@ You MUST respond with ONLY a valid JSON object (no markdown, no code blocks, no 
     "Specific content idea #4",
     "Specific content idea #5"
   ],
+  "channelContent": [
+    {
+      "channel": "Channel name (must match one of the user's selected channels)",
+      "posts": [
+        "Ready-to-use post/tweet/caption #1 with hashtags and emojis where appropriate",
+        "Ready-to-use post/tweet/caption #2",
+        "Ready-to-use post/tweet/caption #3"
+      ]
+    }
+  ],
   "metrics": [
     {
       "name": "Metric name",
@@ -55,6 +65,7 @@ Rules:
 - channels array must have exactly 3 items
 - weeks array must have exactly 4 items (week 1, 2, 3, 4), each with 4-5 actions
 - contentIdeas must have exactly 5 items
+- channelContent must have one entry per user-selected channel (excluding "None"). Each entry must have exactly 3 ready-to-post items tailored to that platform's format (e.g. tweets for X with 280 char limit, Instagram captions with hashtags, LinkedIn professional posts, Reddit discussion posts, YouTube video titles/descriptions, TikTok video concepts, email subject lines + preview text, SEO blog post titles + meta descriptions). Make them specific to the product and ready to copy-paste.
 - metrics must have 4-5 items
 - quickWins must have exactly 3 items
 - Every recommendation must be specific to the product described — no generic advice

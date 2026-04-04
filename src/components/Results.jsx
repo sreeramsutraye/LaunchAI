@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import {
   BarChart2, Lightbulb, Target, Zap, Calendar,
   Hash, Copy, Check, RefreshCw, ChevronDown, ChevronUp,
-  Download,
+  Download, MessageSquare,
 } from 'lucide-react'
 import { useScrollFadeIn } from '../hooks/useScrollFadeIn'
 import { useAuth } from '../context/AuthContext'
@@ -13,7 +13,8 @@ const SECTIONS = {
   weeks:     { icon: Calendar,   color: 'bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400' },
   content:   { icon: Lightbulb,  color: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' },
   metrics:   { icon: BarChart2,  color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' },
-  quickWins: { icon: Zap,        color: 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400' },
+  quickWins:       { icon: Zap,            color: 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400' },
+  channelContent:  { icon: MessageSquare,  color: 'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400' },
 }
 
 function SectionCard({ sectionKey, title, className = '', children }) {
@@ -62,6 +63,40 @@ function WeekCard({ week, theme, actions }) {
   )
 }
 
+function ChannelPostCard({ channel, posts }) {
+  const [copiedIdx, setCopiedIdx] = useState(null)
+
+  const handleCopyPost = async (text, idx) => {
+    await navigator.clipboard.writeText(text)
+    setCopiedIdx(idx)
+    setTimeout(() => setCopiedIdx(null), 2000)
+  }
+
+  return (
+    <div className="border border-gray-100 dark:border-white/5 rounded-xl overflow-hidden bg-gray-50/50 dark:bg-white/[0.02]">
+      <div className="p-3.5 border-b border-gray-100 dark:border-white/5">
+        <p className="font-medium text-gray-900 dark:text-white text-sm">{channel}</p>
+      </div>
+      <div className="p-3.5 space-y-2.5">
+        {posts.map((post, i) => (
+          <div key={i} className="group relative p-3 rounded-lg bg-white dark:bg-white/[0.03] border border-gray-100 dark:border-white/5">
+            <p className="text-gray-600 dark:text-gray-300 text-xs leading-relaxed pr-8">{post}</p>
+            <button
+              onClick={() => handleCopyPost(post, i)}
+              className="absolute top-2.5 right-2.5 p-1 rounded-md opacity-0 group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-white/10 transition-all"
+              title="Copy to clipboard"
+            >
+              {copiedIdx === i
+                ? <Check className="w-3 h-3 text-emerald-500" />
+                : <Copy className="w-3 h-3 text-gray-400" />}
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function planToText(plan, productName) {
   return [
     `30-DAY MARKETING PLAN — ${productName}`, '='.repeat(50), '',
@@ -69,6 +104,10 @@ function planToText(plan, productName) {
     'TOP RECOMMENDED CHANNELS', ...plan.channels.map((c) => `- ${c.name}: ${c.reason}`), '',
     'WEEK-BY-WEEK BREAKDOWN', ...plan.weeks.flatMap((w) => [`Week ${w.week}: ${w.theme}`, ...w.actions.map((a, i) => `  ${i + 1}. ${a}`), '']),
     'CONTENT IDEAS', ...plan.contentIdeas.map((idea, i) => `${i + 1}. ${idea}`), '',
+    ...(plan.channelContent?.length ? [
+      'READY-TO-POST CONTENT',
+      ...plan.channelContent.flatMap((ch) => [`\n--- ${ch.channel} ---`, ...ch.posts.map((p, i) => `${i + 1}. ${p}`), '']),
+    ] : []),
     'KEY METRICS', ...plan.metrics.map((m) => `- ${m.name}: ${m.description}`), '',
     'QUICK WINS', ...plan.quickWins.map((w, i) => `${i + 1}. ${w}`),
   ].join('\n')
@@ -205,7 +244,20 @@ export default function Results({ plan, productName, onRegenerate }) {
             </SectionCard>
           </div>
 
-          {/* Row 4: Quick Wins full width */}
+          {/* Row 4: Channel-Specific Content */}
+          {plan.channelContent?.length > 0 && (
+            <div className="mb-4">
+              <SectionCard sectionKey="channelContent" title="Ready-to-Post Content">
+                <div className="grid md:grid-cols-2 gap-2.5">
+                  {plan.channelContent.map((ch, i) => (
+                    <ChannelPostCard key={i} channel={ch.channel} posts={ch.posts} />
+                  ))}
+                </div>
+              </SectionCard>
+            </div>
+          )}
+
+          {/* Row 5: Quick Wins full width */}
           <SectionCard sectionKey="quickWins" title="Quick Wins — Do These Today">
             <div className="grid sm:grid-cols-3 gap-2.5">
               {plan.quickWins.map((win, i) => (

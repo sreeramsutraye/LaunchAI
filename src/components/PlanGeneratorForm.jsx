@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import AuthModal from './AuthModal'
 
 const PRODUCT_TYPES = ['Website/SaaS', 'Book', 'Physical Product', 'Mobile App', 'Service/Freelance', 'Other']
-const CHANNELS = ['SEO', 'Twitter/X', 'Instagram', 'TikTok', 'Email', 'Reddit', 'YouTube', 'LinkedIn', 'None']
+const CHANNELS = ['SEO', 'X', 'Instagram', 'TikTok', 'Email', 'Reddit', 'YouTube', 'LinkedIn', 'None']
 const BUDGETS = [
   { label: '$0 — Organic Only', value: 'organic' },
   { label: '$1 – $500', value: '1-500' },
@@ -24,7 +24,7 @@ const INITIAL_FORM = {
   productType: 'Website/SaaS',
   description: 'Generates a 30-day marketing plan for newly launched products',
   targetAudience: 'entrepreneurs',
-  channels: ['Twitter/X'],
+  channels: ['X'],
   budget: 'organic',
   goal: 'signups',
 }

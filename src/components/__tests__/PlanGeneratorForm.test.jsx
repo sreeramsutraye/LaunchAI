@@ -47,7 +47,7 @@ describe('PlanGeneratorForm', () => {
 
   it('renders all channel chips', () => {
     renderForm()
-    const channels = ['SEO', 'Twitter/X', 'Instagram', 'TikTok', 'Email', 'Reddit', 'YouTube', 'LinkedIn', 'None']
+    const channels = ['SEO', 'X', 'Instagram', 'TikTok', 'Email', 'Reddit', 'YouTube', 'LinkedIn', 'None']
     channels.forEach((ch) => {
       expect(screen.getByRole('button', { name: ch })).toBeInTheDocument()
     })
@@ -127,9 +127,9 @@ describe('PlanGeneratorForm', () => {
     renderForm()
 
     const noneBtn = screen.getByRole('button', { name: 'None' })
-    const twitterBtn = screen.getByRole('button', { name: 'Twitter/X' })
+    const twitterBtn = screen.getByRole('button', { name: 'X' })
 
-    // Twitter/X is active by default
+    // X is active by default
     expect(twitterBtn.className).toContain('bg-brand-600')
 
     // Click None
