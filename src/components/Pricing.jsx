@@ -8,7 +8,7 @@ const plans = [
     price: '$0',
     period: '',
     desc: 'Try it out, one plan on us.',
-    features: ['1 marketing plan', 'Full 30-day strategy', 'Watermarked PDF export'],
+    features: ['Up to 5 marketing plans', 'Full 30-day strategy', 'Save & revisit history', 'Watermarked PDF export'],
     cta: 'Get Started',
     highlighted: false,
     tierKey: 'free',

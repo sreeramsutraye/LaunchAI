@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Zap, Moon, Sun, LogOut, Crown } from 'lucide-react'
+import { Zap, Moon, Sun, LogOut, Crown, Clock } from 'lucide-react'
 import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
 import AuthModal from './AuthModal'
 
-export default function Navbar() {
+export default function Navbar({ onOpenHistory }) {
   const [scrolled, setScrolled] = useState(false)
   const [authOpen, setAuthOpen] = useState(false)
   const { dark, toggle } = useTheme()
@@ -52,6 +52,13 @@ export default function Navbar() {
 
             {user ? (
               <div className="flex items-center gap-2">
+                {/* My Plans button */}
+                <button onClick={onOpenHistory}
+                  className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-2.5 py-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                  title="My Plans">
+                  <Clock className="w-3.5 h-3.5" /> My Plans
+                </button>
+
                 {/* Tier badge */}
                 <span className={`hidden sm:flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full ${tierColors[tier]}`}>
                   {tier !== 'free' && <Crown className="w-3 h-3" />}

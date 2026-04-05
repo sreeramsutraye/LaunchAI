@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import {
   BarChart2, Lightbulb, Target, Zap, Calendar,
   Hash, Copy, Check, RefreshCw, ChevronDown, ChevronUp,
-  Download, MessageSquare,
+  Download, MessageSquare, Pencil, Save, X,
 } from 'lucide-react'
 import { useScrollFadeIn } from '../hooks/useScrollFadeIn'
 import { useAuth } from '../context/AuthContext'
@@ -15,6 +15,20 @@ const SECTIONS = {
   metrics:   { icon: BarChart2,  color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' },
   quickWins:       { icon: Zap,            color: 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400' },
   channelContent:  { icon: MessageSquare,  color: 'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400' },
+}
+
+/* ── Editable text field ── */
+function EditableText({ value, onChange, editing, className = '', multiline = false }) {
+  if (!editing) return <span className={className}>{value}</span>
+
+  const Tag = multiline ? 'textarea' : 'input'
+  return (
+    <Tag
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className={`${className} bg-white dark:bg-white/5 border border-brand-300 dark:border-brand-700 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-200 dark:focus:ring-brand-900/40 w-full ${multiline ? 'min-h-[60px] resize-y' : ''}`}
+    />
+  )
 }
 
 function SectionCard({ sectionKey, title, className = '', children }) {
@@ -32,20 +46,21 @@ function SectionCard({ sectionKey, title, className = '', children }) {
   )
 }
 
-function WeekCard({ week, theme, actions }) {
+function WeekCard({ week, theme, actions, editing, onChangeTheme, onChangeAction }) {
   const [open, setOpen] = useState(week === 1)
   return (
     <div className="border border-gray-100 dark:border-white/5 rounded-xl overflow-hidden bg-gray-50/50 dark:bg-white/[0.02]">
       <button className="w-full flex items-center justify-between p-3.5 text-left hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors"
         onClick={() => setOpen(!open)}>
-        <div className="flex items-center gap-2.5">
-          <span className="w-6 h-6 rounded-md bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 text-xs font-bold flex items-center justify-center">{week}</span>
-          <div>
+        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+          <span className="w-6 h-6 rounded-md bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 text-xs font-bold flex items-center justify-center flex-shrink-0">{week}</span>
+          <div className="flex-1 min-w-0">
             <p className="text-[10px] text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">Week {week}</p>
-            <p className="text-gray-900 dark:text-white font-medium text-sm">{theme}</p>
+            <EditableText value={theme} onChange={onChangeTheme} editing={editing}
+              className="text-gray-900 dark:text-white font-medium text-sm block truncate" />
           </div>
         </div>
-        {open ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
+        {open ? <ChevronUp className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />}
       </button>
       {open && (
         <div className="px-3.5 pb-3.5 border-t border-gray-100 dark:border-white/5">
@@ -53,7 +68,8 @@ function WeekCard({ week, theme, actions }) {
             {actions.map((action, i) => (
               <li key={i} className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
                 <span className="mt-0.5 w-4 h-4 rounded-full bg-brand-50 dark:bg-brand-900/20 text-brand-500 dark:text-brand-400 text-[10px] flex items-center justify-center flex-shrink-0 font-medium">{i + 1}</span>
-                {action}
+                <EditableText value={action} onChange={(v) => onChangeAction(i, v)} editing={editing}
+                  className="flex-1" />
               </li>
             ))}
           </ul>
@@ -63,7 +79,7 @@ function WeekCard({ week, theme, actions }) {
   )
 }
 
-function ChannelPostCard({ channel, posts }) {
+function ChannelPostCard({ channel, posts, editing, onChangeChannel, onChangePost }) {
   const [copiedIdx, setCopiedIdx] = useState(null)
 
   const handleCopyPost = async (text, idx) => {
@@ -75,21 +91,32 @@ function ChannelPostCard({ channel, posts }) {
   return (
     <div className="border border-gray-100 dark:border-white/5 rounded-xl overflow-hidden bg-gray-50/50 dark:bg-white/[0.02]">
       <div className="p-3.5 border-b border-gray-100 dark:border-white/5">
-        <p className="font-medium text-gray-900 dark:text-white text-sm">{channel}</p>
+        <EditableText value={channel} onChange={onChangeChannel} editing={editing}
+          className="font-medium text-gray-900 dark:text-white text-sm" />
       </div>
       <div className="p-3.5 space-y-2.5">
         {posts.map((post, i) => (
           <div key={i} className="group relative p-3 rounded-lg bg-white dark:bg-white/[0.03] border border-gray-100 dark:border-white/5">
-            <p className="text-gray-600 dark:text-gray-300 text-xs leading-relaxed pr-8">{post}</p>
-            <button
-              onClick={() => handleCopyPost(post, i)}
-              className="absolute top-2.5 right-2.5 p-1 rounded-md opacity-0 group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-white/10 transition-all"
-              title="Copy to clipboard"
-            >
-              {copiedIdx === i
-                ? <Check className="w-3 h-3 text-emerald-500" />
-                : <Copy className="w-3 h-3 text-gray-400" />}
-            </button>
+            {editing ? (
+              <textarea
+                value={post}
+                onChange={(e) => onChangePost(i, e.target.value)}
+                className="text-gray-600 dark:text-gray-300 text-xs leading-relaxed w-full bg-white dark:bg-white/5 border border-brand-300 dark:border-brand-700 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-200 dark:focus:ring-brand-900/40 min-h-[50px] resize-y"
+              />
+            ) : (
+              <>
+                <p className="text-gray-600 dark:text-gray-300 text-xs leading-relaxed pr-8">{post}</p>
+                <button
+                  onClick={() => handleCopyPost(post, i)}
+                  className="absolute top-2.5 right-2.5 p-1 rounded-md opacity-0 group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-white/10 transition-all"
+                  title="Copy to clipboard"
+                >
+                  {copiedIdx === i
+                    ? <Check className="w-3 h-3 text-emerald-500" />
+                    : <Copy className="w-3 h-3 text-gray-400" />}
+                </button>
+              </>
+            )}
           </div>
         ))}
       </div>
@@ -113,9 +140,11 @@ function planToText(plan, productName) {
   ].join('\n')
 }
 
-export default function Results({ plan, productName, onRegenerate }) {
+export default function Results({ plan, productName, onRegenerate, onPlanChange, planId, onSave, saving }) {
   const [copied, setCopied] = useState(false)
   const [exporting, setExporting] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [snapshot, setSnapshot] = useState(null)
   const ref = useScrollFadeIn()
   const exportRef = useRef(null)
   const { tierLimits } = useAuth()
@@ -146,6 +175,64 @@ export default function Results({ plan, productName, onRegenerate }) {
     setExporting(false)
   }
 
+  const startEditing = () => {
+    setSnapshot(JSON.parse(JSON.stringify(plan)))
+    setEditing(true)
+  }
+
+  const cancelEditing = () => {
+    if (snapshot) onPlanChange(snapshot)
+    setSnapshot(null)
+    setEditing(false)
+  }
+
+  const saveEditing = async () => {
+    setSnapshot(null)
+    setEditing(false)
+    if (onSave) await onSave()
+  }
+
+  /* ── Immutable update helpers ── */
+  const updatePlan = (updater) => onPlanChange(updater(plan))
+
+  const setSummary = (v) => updatePlan((p) => ({ ...p, summary: v }))
+
+  const setChannelName = (i, v) => updatePlan((p) => ({
+    ...p, channels: p.channels.map((c, j) => j === i ? { ...c, name: v } : c),
+  }))
+  const setChannelReason = (i, v) => updatePlan((p) => ({
+    ...p, channels: p.channels.map((c, j) => j === i ? { ...c, reason: v } : c),
+  }))
+
+  const setWeekTheme = (wi, v) => updatePlan((p) => ({
+    ...p, weeks: p.weeks.map((w, j) => j === wi ? { ...w, theme: v } : w),
+  }))
+  const setWeekAction = (wi, ai, v) => updatePlan((p) => ({
+    ...p, weeks: p.weeks.map((w, j) => j === wi ? { ...w, actions: w.actions.map((a, k) => k === ai ? v : a) } : w),
+  }))
+
+  const setContentIdea = (i, v) => updatePlan((p) => ({
+    ...p, contentIdeas: p.contentIdeas.map((c, j) => j === i ? v : c),
+  }))
+
+  const setMetricName = (i, v) => updatePlan((p) => ({
+    ...p, metrics: p.metrics.map((m, j) => j === i ? { ...m, name: v } : m),
+  }))
+  const setMetricDesc = (i, v) => updatePlan((p) => ({
+    ...p, metrics: p.metrics.map((m, j) => j === i ? { ...m, description: v } : m),
+  }))
+
+  const setQuickWin = (i, v) => updatePlan((p) => ({
+    ...p, quickWins: p.quickWins.map((w, j) => j === i ? v : w),
+  }))
+
+  const setChContentChannel = (i, v) => updatePlan((p) => ({
+    ...p, channelContent: p.channelContent.map((ch, j) => j === i ? { ...ch, channel: v } : ch),
+  }))
+  const setChContentPost = (ci, pi, v) => updatePlan((p) => ({
+    ...p, channelContent: p.channelContent.map((ch, j) => j === ci ? { ...ch, posts: ch.posts.map((post, k) => k === pi ? v : post) } : ch),
+  }))
+
   return (
     <section id="results" className="py-14 px-5">
       <div ref={ref} className="fade-in-section max-w-6xl mx-auto">
@@ -158,39 +245,72 @@ export default function Results({ plan, productName, onRegenerate }) {
             </h2>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
-            <button onClick={onRegenerate} className="btn-secondary text-xs py-2 px-3.5 flex items-center gap-1.5">
-              <RefreshCw className="w-3.5 h-3.5" /> Redo
-            </button>
-            <button onClick={handleCopy}
-              className={`text-xs py-2 px-3.5 rounded-full font-medium flex items-center gap-1.5 transition-all duration-200 ${
-                copied ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400' : 'btn-secondary'
-              }`}>
-              {copied ? <><Check className="w-3.5 h-3.5" /> Copied</> : <><Copy className="w-3.5 h-3.5" /> Copy</>}
-            </button>
-            <button onClick={handleExportPDF} disabled={exporting}
-              className="btn-primary text-xs py-2 px-3.5 flex items-center gap-1.5 disabled:opacity-60">
-              {exporting ? (
-                <><div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Exporting…</>
-              ) : (
-                <><Download className="w-3.5 h-3.5" /> Export PDF</>
-              )}
-            </button>
+            {editing ? (
+              <>
+                <button onClick={cancelEditing}
+                  className="btn-secondary text-xs py-2 px-3.5 flex items-center gap-1.5">
+                  <X className="w-3.5 h-3.5" /> Cancel
+                </button>
+                <button onClick={saveEditing} disabled={saving}
+                  className="btn-primary text-xs py-2 px-3.5 flex items-center gap-1.5 disabled:opacity-60">
+                  {saving ? (
+                    <><div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Saving…</>
+                  ) : (
+                    <><Save className="w-3.5 h-3.5" /> Save Changes</>
+                  )}
+                </button>
+              </>
+            ) : (
+              <>
+                <button onClick={onRegenerate} className="btn-secondary text-xs py-2 px-3.5 flex items-center gap-1.5">
+                  <RefreshCw className="w-3.5 h-3.5" /> Redo
+                </button>
+                <button onClick={startEditing}
+                  className="btn-secondary text-xs py-2 px-3.5 flex items-center gap-1.5">
+                  <Pencil className="w-3.5 h-3.5" /> Edit
+                </button>
+                <button onClick={handleCopy}
+                  className={`text-xs py-2 px-3.5 rounded-full font-medium flex items-center gap-1.5 transition-all duration-200 ${
+                    copied ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400' : 'btn-secondary'
+                  }`}>
+                  {copied ? <><Check className="w-3.5 h-3.5" /> Copied</> : <><Copy className="w-3.5 h-3.5" /> Copy</>}
+                </button>
+                <button onClick={handleExportPDF} disabled={exporting}
+                  className="btn-primary text-xs py-2 px-3.5 flex items-center gap-1.5 disabled:opacity-60">
+                  {exporting ? (
+                    <><div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Exporting…</>
+                  ) : (
+                    <><Download className="w-3.5 h-3.5" /> Export PDF</>
+                  )}
+                </button>
+              </>
+            )}
           </div>
         </div>
 
+        {/* Edit mode banner */}
+        {editing && (
+          <div className="mb-4 p-3 rounded-xl bg-brand-50 dark:bg-brand-900/15 border border-brand-200 dark:border-brand-800/30 flex items-center gap-2.5">
+            <Pencil className="w-4 h-4 text-brand-600 dark:text-brand-400 flex-shrink-0" />
+            <p className="text-brand-800 dark:text-brand-300 text-xs">
+              Click any text to edit. Changes are saved when you click <strong>Save Changes</strong>.
+            </p>
+          </div>
+        )}
+
         {/* Exportable content */}
         <div ref={exportRef}>
-          {/* Watermark for free tier */}
           {tierLimits?.pdfWatermark && (
             <div className="hidden print:block text-center text-gray-300 text-xs mb-4">
               Generated by LaunchPlan AI — Free Tier
             </div>
           )}
 
-          {/* Row 1: Summary + Channels side by side */}
+          {/* Row 1: Summary + Channels */}
           <div className="grid lg:grid-cols-5 gap-4 mb-4">
             <SectionCard sectionKey="summary" title="Executive Summary" className="lg:col-span-3">
-              <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-sm">{plan.summary}</p>
+              <EditableText value={plan.summary} onChange={setSummary} editing={editing} multiline
+                className="text-gray-600 dark:text-gray-300 leading-relaxed text-sm" />
             </SectionCard>
 
             <SectionCard sectionKey="channels" title="Top Channels" className="lg:col-span-2">
@@ -198,9 +318,11 @@ export default function Results({ plan, productName, onRegenerate }) {
                 {plan.channels.map((ch, i) => (
                   <div key={i} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-gray-50 dark:bg-white/[0.03]">
                     <span className="w-5 h-5 rounded-full bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</span>
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white text-xs">{ch.name}</p>
-                      <p className="text-gray-500 dark:text-gray-400 text-[11px] mt-0.5 leading-relaxed">{ch.reason}</p>
+                    <div className="flex-1 min-w-0">
+                      <EditableText value={ch.name} onChange={(v) => setChannelName(i, v)} editing={editing}
+                        className="font-medium text-gray-900 dark:text-white text-xs" />
+                      <EditableText value={ch.reason} onChange={(v) => setChannelReason(i, v)} editing={editing}
+                        className="text-gray-500 dark:text-gray-400 text-[11px] mt-0.5 leading-relaxed block" />
                     </div>
                   </div>
                 ))}
@@ -208,25 +330,29 @@ export default function Results({ plan, productName, onRegenerate }) {
             </SectionCard>
           </div>
 
-          {/* Row 2: Week-by-Week full width */}
+          {/* Row 2: Week-by-Week */}
           <div className="mb-4">
             <SectionCard sectionKey="weeks" title="Week-by-Week Breakdown">
               <div className="grid md:grid-cols-2 gap-2.5">
-                {plan.weeks.map((w) => (
-                  <WeekCard key={w.week} week={w.week} theme={w.theme} actions={w.actions} />
+                {plan.weeks.map((w, wi) => (
+                  <WeekCard key={w.week} week={w.week} theme={w.theme} actions={w.actions}
+                    editing={editing}
+                    onChangeTheme={(v) => setWeekTheme(wi, v)}
+                    onChangeAction={(ai, v) => setWeekAction(wi, ai, v)} />
                 ))}
               </div>
             </SectionCard>
           </div>
 
-          {/* Row 3: Content Ideas + Metrics side by side */}
+          {/* Row 3: Content Ideas + Metrics */}
           <div className="grid lg:grid-cols-2 gap-4 mb-4">
             <SectionCard sectionKey="content" title="Content Ideas">
               <ul className="space-y-2">
                 {plan.contentIdeas.map((idea, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <span className="mt-0.5 w-5 h-5 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 text-[10px] font-bold flex items-center justify-center flex-shrink-0">{i + 1}</span>
-                    <span className="text-gray-600 dark:text-gray-300 text-xs leading-relaxed">{idea}</span>
+                    <EditableText value={idea} onChange={(v) => setContentIdea(i, v)} editing={editing}
+                      className="text-gray-600 dark:text-gray-300 text-xs leading-relaxed flex-1" />
                   </li>
                 ))}
               </ul>
@@ -236,8 +362,10 @@ export default function Results({ plan, productName, onRegenerate }) {
               <div className="grid grid-cols-2 gap-2.5">
                 {plan.metrics.map((m, i) => (
                   <div key={i} className="p-2.5 rounded-lg bg-gray-50 dark:bg-white/[0.03]">
-                    <p className="font-medium text-gray-900 dark:text-white text-xs mb-0.5">{m.name}</p>
-                    <p className="text-gray-500 dark:text-gray-400 text-[11px] leading-relaxed">{m.description}</p>
+                    <EditableText value={m.name} onChange={(v) => setMetricName(i, v)} editing={editing}
+                      className="font-medium text-gray-900 dark:text-white text-xs mb-0.5 block" />
+                    <EditableText value={m.description} onChange={(v) => setMetricDesc(i, v)} editing={editing}
+                      className="text-gray-500 dark:text-gray-400 text-[11px] leading-relaxed block" />
                   </div>
                 ))}
               </div>
@@ -250,14 +378,17 @@ export default function Results({ plan, productName, onRegenerate }) {
               <SectionCard sectionKey="channelContent" title="Ready-to-Post Content">
                 <div className="grid md:grid-cols-2 gap-2.5">
                   {plan.channelContent.map((ch, i) => (
-                    <ChannelPostCard key={i} channel={ch.channel} posts={ch.posts} />
+                    <ChannelPostCard key={i} channel={ch.channel} posts={ch.posts}
+                      editing={editing}
+                      onChangeChannel={(v) => setChContentChannel(i, v)}
+                      onChangePost={(pi, v) => setChContentPost(i, pi, v)} />
                   ))}
                 </div>
               </SectionCard>
             </div>
           )}
 
-          {/* Row 5: Quick Wins full width */}
+          {/* Row 5: Quick Wins */}
           <SectionCard sectionKey="quickWins" title="Quick Wins — Do These Today">
             <div className="grid sm:grid-cols-3 gap-2.5">
               {plan.quickWins.map((win, i) => (
@@ -265,7 +396,8 @@ export default function Results({ plan, productName, onRegenerate }) {
                   <div className="w-5 h-5 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <Zap className="w-2.5 h-2.5 text-rose-500 dark:text-rose-400" />
                   </div>
-                  <p className="text-gray-700 dark:text-gray-300 text-xs leading-relaxed">{win}</p>
+                  <EditableText value={win} onChange={(v) => setQuickWin(i, v)} editing={editing}
+                    className="text-gray-700 dark:text-gray-300 text-xs leading-relaxed flex-1" />
                 </div>
               ))}
             </div>
@@ -275,7 +407,7 @@ export default function Results({ plan, productName, onRegenerate }) {
         {/* Bottom CTA */}
         <div className="mt-6 card p-5 text-center border-brand-100 dark:border-brand-900/30 bg-brand-50/50 dark:bg-brand-900/10">
           <p className="font-heading font-semibold text-base text-gray-900 dark:text-white mb-1">Want unlimited plans?</p>
-          <p className="text-gray-500 dark:text-gray-400 text-xs mb-3">Upgrade to Pro for clean PDF exports and saved history.</p>
+          <p className="text-gray-500 dark:text-gray-400 text-xs mb-3">Upgrade to Pro for unlimited plans and clean PDF exports.</p>
           <a href="#pricing" className="btn-primary inline-flex items-center gap-2 text-xs py-2 px-5">View Pricing</a>
         </div>
       </div>

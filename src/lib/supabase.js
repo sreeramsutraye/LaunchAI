@@ -78,3 +78,22 @@ export async function getUserPlans(userId) {
   if (error) throw error
   return data || []
 }
+
+export async function updatePlan(planId, planData) {
+  const { data, error } = await supabase
+    .from('plans')
+    .update({ plan_data: planData })
+    .eq('id', planId)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function deletePlan(planId) {
+  const { error } = await supabase
+    .from('plans')
+    .delete()
+    .eq('id', planId)
+  if (error) throw error
+}

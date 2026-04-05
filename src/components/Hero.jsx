@@ -94,8 +94,8 @@ export default function Hero() {
                   <BarChart2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 font-medium">Metrics</p>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white">4 KPIs to track</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 font-medium">Key Metrics</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">Built-in tracking goals</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
