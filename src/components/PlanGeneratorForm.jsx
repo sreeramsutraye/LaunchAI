@@ -20,13 +20,13 @@ const GOALS = [
 ]
 
 const INITIAL_FORM = {
-  productName: 'LaunchAI',
-  productType: 'Website/SaaS',
-  description: 'Generates a 30-day marketing plan for newly launched products',
-  targetAudience: 'entrepreneurs',
-  channels: ['X'],
-  budget: 'organic',
-  goal: 'signups',
+  productName: '',
+  productType: '',
+  description: '',
+  targetAudience: '',
+  channels: [],
+  budget: '',
+  goal: '',
 }
 
 export default function PlanGeneratorForm({ onGenerate, isLoading }) {
